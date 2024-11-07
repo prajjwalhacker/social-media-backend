@@ -5,6 +5,7 @@ const dotenv = require('dotenv');
 const config = require('../config.json');
 const Post = require('../models/Post');
 const mongoose = require('mongoose');
+const ProfileAnalytics = require('../models/ProfileAnalytics');
 
 dotenv.config();
 
@@ -280,6 +281,36 @@ const connectionRequestSend = async (req, res) => {
     catch (err) {
         console.log(err);
         res.status(500).json({ msg: "something went wrong !" });
+    }
+}
+
+export const profileAnalytics = async (req, res)=> {
+    try {
+       const { userId, viewerUserId } = req.body || {};
+       const profileAnalytics = await ProfileAnalytics.findOne({
+          userId
+       }).lean();
+       if (!profileAnalytics) {
+          const profileAnalyticsObj = new ProfileAnalytics({ userId: new mongoose.Types.ObjectId(userId), totalVisits: 1, peopleVisted: [{ peopleId: viewerUserId, visitedAt: new Date()  }] });
+          await profileAnalyticsObj.save();
+       }
+       else {
+          const peopleVisited = profileAnalytics.peopleVisited;
+          const reqIndex = peopleVisited.findIndex((item) => String(item.peopleId) === String(viewerUserId));
+          if (reqIndex === -1) {
+             peopleVisted.push({ userId: new mongoose.Types.ObjectId(viewerUserId), visitedAt: new Date() });
+          }
+          await ProfileAnalytics.findOneAndUpdate({ userId }, {
+             $set: {
+               totalVisits: Number(profileAnalytics.totalVisits) + 1,
+               peopleVisited
+             }
+          })
+       }
+       res.json({ msg: "analytics recorded successfully" });
+    }
+    catch (err) {
+        res.status(500).json({ msg: "something went wrong" });
     }
 }
 
