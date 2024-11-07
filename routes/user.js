@@ -1,11 +1,12 @@
 const express = require('express');
-const { signup, login, logout, genenrateToken } = require('../controllers/user.js');
+const { signup, login, logout, genenrateToken, postCreation, getPosts, authenticate, postDeletion, updatePost, connectionRequestSend, acceptConnection } = require('../controllers/user.js');
 
 const router = express.Router();
 
 
 // Route for user signup
 router.post('/signup', signup);
+
 
 // Route for user login
 router.post('/login', login);
@@ -15,4 +16,15 @@ router.post('/logout', logout);
 
 router.post('/refreshToken', genenrateToken);
 
+router.post('/post', authenticate, postCreation);
+
+router.get('/postlist', getPosts);
+
+router.post('/deletePost', authenticate, postDeletion);
+
+router.post('/updatePost', authenticate, updatePost);
+
+router.post('/connectionRequest', authenticate, connectionRequestSend);
+
+router.post('/connectionRequest', authenticate, acceptConnection);
 module.exports = router;

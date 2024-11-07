@@ -8,6 +8,13 @@ const userSchema = new mongoose.Schema({
     trim: true, // Removes whitespace from start and end
     minlength: 3,
   },
+  connectionRequests: [
+    {
+      userId: mongoose.Schema.Types.ObjectId,
+      accepted: Boolean
+    }
+  ],
+  friends: [mongoose.Schema.Types.ObjectId],
   email: {
     type: String,
     required: true,
@@ -20,7 +27,6 @@ const userSchema = new mongoose.Schema({
     type: String,
     required: true,
     minlength: 6, // Increase based on security requirements
-    select: false, // Excludes password field in queries by default for security
   },
   profilePicture: {
     type: String,
