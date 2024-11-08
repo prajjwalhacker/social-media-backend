@@ -19,8 +19,9 @@ const createToken = (userId, expiresIn) => {
 
 const signup = async (req, res) => {
   try {
-    console.log("helloooo");
+
     const { username, email, password } = req.body;
+
 
     const existingUser = await User.findOne({ email });
     if (existingUser) return res.status(400).json({ message: 'User already exists' });
@@ -28,18 +29,10 @@ const signup = async (req, res) => {
     // Create a new user
     const newUser = new User({ username, email, password });
 
-    const token = createToken(newUser._id, config.JWT_EXPIRES_IN);
-    const refreshToken = createToken(newUser._id, config.REFRESH_EXPIRES_IN);
-
-    newUser.token = token;
-    newUser.refreshToken = refreshToken;
-
     await newUser.save();
+  
+    res.send(newUser);
 
-
-    res.cookie('refreshToken', refreshToken, { httpOnly: true, sameSite: 'strict' })
-    .header('Authorization', token)
-    .send(newUser);
   } catch (error) {
     console.log(error);
     res.status(500).json({ message: 'Error during signup', error });
@@ -71,12 +64,14 @@ const login = async (req, res) => {
        $set: {
           token: token,
           refreshToken: refreshToken
-       }
-    })
+       },
+    }, { returnDocument: 'after', new: true });
 
+    console.log("newUser");
+    console.log(newUser);
 
     res
-      .status(200).cookie('refreshToken', refreshToken, { httpOnly: true, sameSite: 'strict' })
+      .status(200).cookie('refreshToken', refreshToken)
       .header('Authorization', token)
       .json({ message: 'Login successful', newUser });
   } catch (error) {
@@ -84,6 +79,26 @@ const login = async (req, res) => {
     res.status(500).json({ message: 'Error during login', error });
   }
 };
+
+const getProfileData = async (req, res)=> {
+   try {
+    if (!req.query.userId) {
+       res.status(400).json({ message: 'user id is required' });
+    }
+    const profileData = await User.findOne({ _id: req.query.userId }).lean();
+
+
+    console.log("profileData");
+    console.log(profileData);
+
+    res.json({ profileData });
+   }
+   catch (err) {
+      console.log("error");
+      console.log(err);
+      res.status(500).json("something went wrong");
+   }
+}
 
 const postCreation = async (req, res) => {
     try {
@@ -96,7 +111,8 @@ const postCreation = async (req, res) => {
       }
       const newPost = new Post({ userId: new mongoose.Types.ObjectId(userId), message: post });
       await newPost.save();
-      res.json({ post: newPost });
+      const postList = await Post.find({ userId: new mongoose.Types.ObjectId(userId) }).sort({ createdAt: -1 }).limit(10);
+      res.json({ postList });
     }
     catch (err) {
       console.log(err);
@@ -120,7 +136,7 @@ const postDeletion = async (req, res)=>{
 
 const logout = (req, res) => {
   res
-    .cookie('token', '', { httpOnly: true, expires: new Date(0) })
+    .cookie('refreshToken', '').header('Authorization', '')
     .status(200)
     .json({ message: 'Logout successful' });
 };
@@ -176,11 +192,11 @@ const authenticate = async (req, res, next) => {
 
 const getPosts = async (req, res) => {
   try {
-    const { userId } = req.body;
+    const { userId } = req.query;
    if (!userId) {
       res.status(401).send('UserId is required');
    }
-   const postList = await Post.find({ userId: mongoose.Types.ObjectId(userId) }).lean();
+   const postList = await Post.find({ userId: new mongoose.Types.ObjectId(userId) }).lean();
 
    res.json({ list: postList });
   }
@@ -284,7 +300,7 @@ const connectionRequestSend = async (req, res) => {
     }
 }
 
-export const profileAnalytics = async (req, res)=> {
+const profileAnalytics = async (req, res)=> {
     try {
        const { userId, viewerUserId } = req.body || {};
        const profileAnalytics = await ProfileAnalytics.findOne({
@@ -314,4 +330,4 @@ export const profileAnalytics = async (req, res)=> {
     }
 }
 
-module.exports = { logout, login,  signup, genenrateToken, postCreation, getPosts, updatePost, authenticate, postDeletion, connectionRequestSend, acceptConnection };
+module.exports = { logout, login,  signup, genenrateToken, postCreation, getPosts, updatePost, authenticate, postDeletion, connectionRequestSend, acceptConnection, getProfileData, profileAnalytics };

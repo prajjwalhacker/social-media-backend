@@ -25,17 +25,11 @@ dotenv.config();
 
 
 const corsOptions = {
-   origin: 'http://localhost:3001',
+   origin: 'http://localhost:3000',
    credentials: true,
    optionsSucessStatus: 200
 }
-app.use((req, res, next) => {
-    console.log(`${req.method} request for ${req.url}`);
-    next();
-});
-app.options('*', cors(corsOptions));
-
-
+app.use(cors(corsOptions));
 app.use(cookieParser())
 app.use(express.json())
 

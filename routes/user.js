@@ -1,5 +1,5 @@
 const express = require('express');
-const { signup, login, logout, genenrateToken, postCreation, getPosts, authenticate, postDeletion, updatePost, connectionRequestSend, acceptConnection } = require('../controllers/user.js');
+const { signup, login, logout, genenrateToken, postCreation, getPosts, authenticate, postDeletion, updatePost, connectionRequestSend, acceptConnection, getProfileData ,} = require('../controllers/user.js');
 
 const router = express.Router();
 
@@ -27,4 +27,6 @@ router.post('/updatePost', authenticate, updatePost);
 router.post('/connectionRequest', authenticate, connectionRequestSend);
 
 router.post('/connectionRequest', authenticate, acceptConnection);
+
+router.get('/get-profile-data', authenticate, getProfileData);
 module.exports = router;
