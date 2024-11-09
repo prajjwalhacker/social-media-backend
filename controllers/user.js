@@ -82,10 +82,14 @@ const login = async (req, res) => {
 
 const getProfileData = async (req, res)=> {
    try {
-    if (!req.query.userId) {
+    if (!req.id) {
        res.status(400).json({ message: 'user id is required' });
     }
-    const profileData = await User.findOne({ _id: req.query.userId }).lean();
+
+    console.log("req.id");
+    console.log(req.id);
+
+    const profileData = await User.findOne({ _id: req.id }).lean();
 
 
     console.log("profileData");
@@ -174,7 +178,7 @@ const authenticate = async (req, res, next) => {
       if (!decoded.id) {
         res.status(401).send("Trying to access resource corruptly");
       }
-      accessToken = jwt.sign({ user: decoded.user }, config.JWT_SECRET, { expiresIn: '1h' });
+      accessToken = jwt.sign({ user: decoded.id }, config.JWT_SECRET, { expiresIn: '1h' });
       await User.findOneAndUpdate({ _id: decoded.id }, {
         $set: {
            token: accessToken 
@@ -185,7 +189,7 @@ const authenticate = async (req, res, next) => {
 
    jwt.verify(accessToken, config.JWT_SECRET, (err, user) => {
     if (err) return res.sendStatus(403); // Invalid token
-    req.user = user;
+    req.id = user.user;
     next();
    });
 }
@@ -300,6 +304,17 @@ const connectionRequestSend = async (req, res) => {
     }
 }
 
+const getAnotherProfileData = async (req, res) => {
+    try {
+        const { userId } = req.query;
+        const userData = await User.findOne({ _id: userId }).select({ refreshToken: 0, token: 0 }).lean();
+        res.json({ userData });
+    }
+    catch (err) {
+        res.status(500).json({ msg: "something went wrong" });
+    }
+}
+
 const profileAnalytics = async (req, res)=> {
     try {
        const { userId, viewerUserId } = req.body || {};
@@ -330,4 +345,4 @@ const profileAnalytics = async (req, res)=> {
     }
 }
 
-module.exports = { logout, login,  signup, genenrateToken, postCreation, getPosts, updatePost, authenticate, postDeletion, connectionRequestSend, acceptConnection, getProfileData, profileAnalytics };
+module.exports = { logout, login,  signup, genenrateToken, postCreation, getPosts, updatePost, authenticate, postDeletion, connectionRequestSend, acceptConnection, getProfileData, profileAnalytics, getAnotherProfileData };
