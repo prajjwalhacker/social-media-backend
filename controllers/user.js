@@ -71,7 +71,11 @@ const login = async (req, res) => {
     console.log(newUser);
 
     res
-      .status(200).cookie('refreshToken', refreshToken)
+      .status(200).cookie('refreshToken', refreshToken, {
+         httpOnly: true,
+         secure: true, // Ensure 'secure' is true in production for HTTPS
+         sameSite: 'None', // Allow cross-origin cookies
+       })
       .header('Authorization', token)
       .json({ message: 'Login successful', newUser });
   } catch (error) {
