@@ -345,4 +345,30 @@ const profileAnalytics = async (req, res)=> {
     }
 }
 
-module.exports = { logout, login,  signup, genenrateToken, postCreation, getPosts, updatePost, authenticate, postDeletion, connectionRequestSend, acceptConnection, getProfileData, profileAnalytics, getAnotherProfileData };
+const userNameSearch = async (req,res) => {
+    const { searchTerm } = req.query;
+
+    console.log(searchTerm);
+
+    const aggregationPipelines = [
+      {
+         $match: {
+           username: { $regex: searchTerm, $options: "i" } // "i" for case-insensitive matching
+         }
+       },
+       {
+         $project: {
+           refreshToken: 0, // Exclude refreshToken
+           token: 0         // Exclude token
+         }
+       }
+    ]
+
+    const users = await User.aggregate(aggregationPipelines);
+    
+
+    res.json({ users })
+    
+}
+
+module.exports = { logout, login,  signup, genenrateToken, postCreation, getPosts, updatePost, authenticate, postDeletion, connectionRequestSend, acceptConnection, getProfileData, profileAnalytics, getAnotherProfileData, userNameSearch };

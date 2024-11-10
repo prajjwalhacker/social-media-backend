@@ -1,5 +1,5 @@
 const express = require('express');
-const { signup, login, logout, genenrateToken, postCreation, getPosts, authenticate, postDeletion, updatePost, connectionRequestSend, acceptConnection, getProfileData , getAnotherProfileData} = require('../controllers/user.js');
+const { signup, login, logout, genenrateToken, postCreation, getPosts, authenticate, postDeletion, updatePost, connectionRequestSend, acceptConnection, getProfileData , getAnotherProfileData, userNameSearch} = require('../controllers/user.js');
 
 const router = express.Router();
 
@@ -8,8 +8,13 @@ const router = express.Router();
 router.post('/signup', signup);
 
 
+router.post('/userNameSearch', authenticate,  userNameSearch);
+
+
 // Route for user login
 router.post('/login', login);
+
+router.get('/userNameSearch',userNameSearch)
 
 // Route for user logout
 router.post('/logout', logout);
