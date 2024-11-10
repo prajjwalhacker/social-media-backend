@@ -8,6 +8,10 @@ const userSchema = new mongoose.Schema({
     trim: true, // Removes whitespace from start and end
     minlength: 3,
   },
+  userWelcomeModal: {
+    type: Boolean,
+    default: true
+  },
   connectionRequests: [
     {
       userId: mongoose.Schema.Types.ObjectId,

@@ -89,15 +89,7 @@ const getProfileData = async (req, res)=> {
     if (!req.id) {
        res.status(400).json({ message: 'user id is required' });
     }
-
-    console.log("req.id");
-    console.log(req.id);
-
     const profileData = await User.findOne({ _id: req.id }).lean();
-
-
-    console.log("profileData");
-    console.log(profileData);
 
     res.json({ profileData });
    }
@@ -105,6 +97,23 @@ const getProfileData = async (req, res)=> {
       console.log("error");
       console.log(err);
       res.status(500).json("something went wrong");
+   }
+}
+
+const userUpdate = async (req, res) => {
+   try {
+      const { userWelcomeModal } = req.body;
+
+      const newUser = await User.findOneAndUpdate({ _id: req.id }, {
+         $set: {
+            userWelcomeModal
+         }
+      }, { new: true });
+
+      res.json({ newUser });
+   }
+   catch (err) {
+      res.status(500).json({ message: "something went wrong" });
    }
 }
 
@@ -200,11 +209,8 @@ const authenticate = async (req, res, next) => {
 
 const getPosts = async (req, res) => {
   try {
-    const { userId } = req.query;
-   if (!userId) {
-      res.status(401).send('UserId is required');
-   }
-   const postList = await Post.find({ userId: new mongoose.Types.ObjectId(userId) }).lean();
+   const userId = req.id;
+   const postList = await Post.find().lean();
 
    res.json({ list: postList });
   }
@@ -352,7 +358,9 @@ const profileAnalytics = async (req, res)=> {
 const userNameSearch = async (req,res) => {
     const { searchTerm } = req.query;
 
-    console.log(searchTerm);
+    if (!searchTerm) {
+      return res.json({ users: [] });
+    }
 
     const aggregationPipelines = [
       {
@@ -371,8 +379,8 @@ const userNameSearch = async (req,res) => {
     const users = await User.aggregate(aggregationPipelines);
     
 
-    res.json({ users })
+    return res.json({ users })
     
 }
 
-module.exports = { logout, login,  signup, genenrateToken, postCreation, getPosts, updatePost, authenticate, postDeletion, connectionRequestSend, acceptConnection, getProfileData, profileAnalytics, getAnotherProfileData, userNameSearch };
+module.exports = { logout, login,  signup, genenrateToken, userUpdate, postCreation, getPosts, updatePost, authenticate, postDeletion, connectionRequestSend, acceptConnection, getProfileData, profileAnalytics, getAnotherProfileData, userNameSearch };
