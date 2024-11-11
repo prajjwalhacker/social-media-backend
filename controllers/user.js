@@ -7,6 +7,7 @@ const Post = require('../models/Post');
 const mongoose = require('mongoose');
 const ProfileAnalytics = require('../models/ProfileAnalytics');
 
+
 dotenv.config();
 
 
@@ -66,6 +67,37 @@ const commentAddition = async (req, res) => {
       console.log("error");
        return res.status(500).json({ message: "Something went wrong" });
     }
+}
+
+const followUser = async (req, res) => {
+     try {
+        const {  userId } = req.body;
+
+
+        console.log("ffff");
+        console.log(req.id);
+        console.log(userId);
+
+        if (!userId) {
+           res.status(400).json({ message: "userId is required" });
+        }
+        else {
+           await User.findOneAndUpdate({ _id: new mongoose.Types.ObjectId(userId) }, {
+              $push: {
+                followers: new mongoose.Types.ObjectId(req.id)
+              }
+           })
+           await User.findOneAndUpdate({ _id: new mongoose.Types.ObjectId(req.id) }, {
+            $push: {
+              followed: new mongoose.Types.ObjectId(userId)
+            }
+         })
+        }
+        res.json({ message: "followed successfully" });
+     }
+     catch (err) {
+        res.status(500).json({ message: "Something went wrong" });
+     }
 }
 
 // Login Function
@@ -433,4 +465,4 @@ const userNameSearch = async (req,res) => {
     
 }
 
-module.exports = { logout, commentAddition,  login,  signup, genenrateToken, likesCreation, userUpdate, postCreation, getPosts, updatePost, authenticate, postDeletion, connectionRequestSend, acceptConnection, getProfileData, profileAnalytics, getAnotherProfileData, userNameSearch };
+module.exports = { logout, commentAddition, followUser, login,  signup, genenrateToken, likesCreation, userUpdate, postCreation, getPosts, updatePost, authenticate, postDeletion, connectionRequestSend, acceptConnection, getProfileData, profileAnalytics, getAnotherProfileData, userNameSearch };
