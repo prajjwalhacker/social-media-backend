@@ -73,25 +73,43 @@ const followUser = async (req, res) => {
      try {
         const {  userId } = req.body;
 
-
-        console.log("ffff");
-        console.log(req.id);
-        console.log(userId);
-
         if (!userId) {
            res.status(400).json({ message: "userId is required" });
         }
         else {
-           await User.findOneAndUpdate({ _id: new mongoose.Types.ObjectId(userId) }, {
-              $push: {
-                followers: new mongoose.Types.ObjectId(req.id)
-              }
-           })
-           await User.findOneAndUpdate({ _id: new mongoose.Types.ObjectId(req.id) }, {
-            $push: {
-              followed: new mongoose.Types.ObjectId(userId)
+          const user = await User.findOne({ _id: new mongoose.Types.ObjectId(userId) }).lean();
+
+          const followerList = user.followers.map((item) => String(item));
+
+          let updateObj1 = {};
+          let updateObj2 = {};
+          if (followerList.includes(String(userId))) {
+             updateObj1 = {
+                $pull: {
+                   followers: new mongoose.Types.ObjectId(req.id)
+                }
+             }
+             updateObj2 = {
+                $pull: {
+                  followed: new mongoose.Types.ObjectId(req.id)
+                }
+             }
+          }
+          else {
+            updateObj1 = {
+               $push: {
+                  followers: new mongoose.Types.ObjectId(req.id)
+               }
             }
-         })
+            updateObj2 = {
+               $push: {
+                 followed: new mongoose.Types.ObjectId(req.id)
+               }
+            }
+          }
+
+           await User.findOneAndUpdate({ _id: new mongoose.Types.ObjectId(userId) }, updateObj1);
+           await User.findOneAndUpdate({ _id: new mongoose.Types.ObjectId(req.id) }, updateObj2);
         }
         res.json({ message: "followed successfully" });
      }
