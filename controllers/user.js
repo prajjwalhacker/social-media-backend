@@ -39,6 +39,35 @@ const signup = async (req, res) => {
   }
 };
 
+const commentAddition = async (req, res) => {
+    try {
+       const { comment, postId } = req.body || {};
+
+       console.log("comment and postId");
+       console.log(comment);
+       console.log(postId);
+
+       const newPost = await Post.findOneAndUpdate({ _id: new mongoose.Types.ObjectId(postId) }, {
+         $push: { 
+            comments: {
+            userId: new mongoose.Types.ObjectId(req.id),
+            message: comment
+         } 
+         }
+       }, {
+         new: true
+       })
+
+       return res.json({ newPost });
+
+    }
+    catch (err) {
+      console.log(err);
+      console.log("error");
+       return res.status(500).json({ message: "Something went wrong" });
+    }
+}
+
 // Login Function
 const login = async (req, res) => {
   console.log("helllooooooo !!");
@@ -120,20 +149,41 @@ const userUpdate = async (req, res) => {
 const postCreation = async (req, res) => {
     try {
       const { userId, post, updateType, postId } = req.body;
-      if (!userId) {
-        return res.status(401).send('Please provide userId to create post');
-      }
       if (!post) {
         return res.status(401).send('post message is required');
       }
-      const newPost = new Post({ userId: new mongoose.Types.ObjectId(userId), message: post });
+      const newPost = new Post({ userId: new mongoose.Types.ObjectId(req.id), message: post });
       await newPost.save();
-      const postList = await Post.find({ userId: new mongoose.Types.ObjectId(userId) }).sort({ createdAt: -1 }).limit(10);
+      const postList = await Post.find({ userId: new mongoose.Types.ObjectId(req.id) }).sort({ createdAt: -1 }).limit(10);
       res.json({ postList });
     }
     catch (err) {
       console.log(err);
       res.status(500).json({ message: 'Error during post creation', err });    
+    }
+}
+
+const likesCreation = async (req, res) => {
+    const { userId, postId } = req.body;
+    try {
+       if (!postId || !userId) {
+          res.status(400).json({ message: "Required field missing" });
+       }
+       else {
+         const postObj = await Post.findOneAndUpdate({ _id: postId }, {
+            $push: {
+               likes: new mongoose.Types.ObjectId(userId)
+            }
+         }, {
+            new: true
+         })
+         const usersData = await User.find({ _id: {  $in: postObj.likes.map((item) => new mongoose.Types.ObjectId(item)) } }).select({ username: 1 });
+         console.log(usersData);
+         return res.json({ usersData });
+       }
+    }
+    catch (err) {
+      return res.status(500).json({ message: "something went wrong" });
     }
 }
 
@@ -383,4 +433,4 @@ const userNameSearch = async (req,res) => {
     
 }
 
-module.exports = { logout, login,  signup, genenrateToken, userUpdate, postCreation, getPosts, updatePost, authenticate, postDeletion, connectionRequestSend, acceptConnection, getProfileData, profileAnalytics, getAnotherProfileData, userNameSearch };
+module.exports = { logout, commentAddition,  login,  signup, genenrateToken, likesCreation, userUpdate, postCreation, getPosts, updatePost, authenticate, postDeletion, connectionRequestSend, acceptConnection, getProfileData, profileAnalytics, getAnotherProfileData, userNameSearch };
