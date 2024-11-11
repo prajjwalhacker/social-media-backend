@@ -260,7 +260,7 @@ const authenticate = async (req, res, next) => {
 const getPosts = async (req, res) => {
   try {
    const userId = req.id;
-   const postList = await Post.find().lean();
+   const postList = await Post.find().sort({ createdAt: -1 }).limit(10).lean();
 
    res.json({ list: postList });
   }
