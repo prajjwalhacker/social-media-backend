@@ -40,6 +40,20 @@ const signup = async (req, res) => {
   }
 };
 
+const getFollowers = async (req, res) => {
+   try {
+      const { followersId  } = req.body;
+      const users = await User.find({ _id: { $in: followersId.map((item) => new mongoose.Types.ObjectId(item)) } }).select({ username: 1 });
+      return res.json({ userList: users });
+   }
+   catch (err) {
+      console.log("err");
+      console.log(err);
+      return res.status(500).json({ msg: "Something went wrong !" });
+   }
+}
+
+
 const commentAddition = async (req, res) => {
     try {
        const { comment, postId } = req.body || {};
@@ -221,9 +235,10 @@ const likesCreation = async (req, res) => {
        }
        else {
          const post = await Post.findOne({ _id: postId }).lean();
+         let postObj;
          const likesArr = post.likes.map((item) => new mongoose.Types.ObjectId(item)) || [];
          if (likesArr.includes(userId)) {
-            const postObj = await Post.findOneAndUpdate({ _id: postId }, {
+            postObj = await Post.findOneAndUpdate({ _id: postId }, {
                $pull: {
                   likes: new mongoose.Types.ObjectId(userId)
                }
@@ -232,7 +247,7 @@ const likesCreation = async (req, res) => {
             })
          }
          else {
-            const postObj = await Post.findOneAndUpdate({ _id: postId }, {
+            postObj = await Post.findOneAndUpdate({ _id: postId }, {
                $push: {
                   likes: new mongoose.Types.ObjectId(userId)
                }
@@ -242,11 +257,12 @@ const likesCreation = async (req, res) => {
          }
         
          const usersData = await User.find({ _id: {  $in: postObj.likes.map((item) => new mongoose.Types.ObjectId(item)) } }).select({ username: 1 });
-         console.log(usersData);
          return res.json({ usersData });
        }
     }
     catch (err) {
+      console.log("err");
+      console.log(err);
       return res.status(500).json({ message: "something went wrong" });
     }
 }
@@ -497,4 +513,4 @@ const userNameSearch = async (req,res) => {
     
 }
 
-module.exports = { logout, commentAddition, followUser, login,  signup, genenrateToken, likesCreation, userUpdate, postCreation, getPosts, updatePost, authenticate, postDeletion, connectionRequestSend, acceptConnection, getProfileData, profileAnalytics, getAnotherProfileData, userNameSearch };
+module.exports = { logout, getFollowers, commentAddition, followUser, login,  signup, genenrateToken, likesCreation, userUpdate, postCreation, getPosts, updatePost, authenticate, postDeletion, connectionRequestSend, acceptConnection, getProfileData, profileAnalytics, getAnotherProfileData, userNameSearch };

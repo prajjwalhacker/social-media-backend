@@ -1,5 +1,5 @@
 const express = require('express');
-const { signup, login, logout, genenrateToken, followUser,  commentAddition, postCreation, getPosts, authenticate, postDeletion, likesCreation, updatePost, connectionRequestSend, acceptConnection, getProfileData , getAnotherProfileData, userNameSearch, userUpdate } = require('../controllers/user.js');
+const { signup, login, logout, genenrateToken, getFollowers, followUser,  commentAddition, postCreation, getPosts, authenticate, postDeletion, likesCreation, updatePost, connectionRequestSend, acceptConnection, getProfileData , getAnotherProfileData, userNameSearch, userUpdate } = require('../controllers/user.js');
 
 const router = express.Router();
 
@@ -30,6 +30,8 @@ router.get('/postlist', getPosts);
 router.post('/followUser', authenticate,  followUser);
 
 router.post('/likes', authenticate, likesCreation);
+
+router.get('/followers', authenticate, getFollowers);
 
 router.post('/commentAddition', authenticate, commentAddition)
 
