@@ -220,13 +220,27 @@ const likesCreation = async (req, res) => {
           res.status(400).json({ message: "Required field missing" });
        }
        else {
-         const postObj = await Post.findOneAndUpdate({ _id: postId }, {
-            $push: {
-               likes: new mongoose.Types.ObjectId(userId)
-            }
-         }, {
-            new: true
-         })
+         const post = await Post.findOne({ _id: postId }).lean();
+         const likesArr = post.likes.map((item) => new mongoose.Types.ObjectId(item)) || [];
+         if (likesArr.includes(userId)) {
+            const postObj = await Post.findOneAndUpdate({ _id: postId }, {
+               $pull: {
+                  likes: new mongoose.Types.ObjectId(userId)
+               }
+            }, {
+               new: true
+            })
+         }
+         else {
+            const postObj = await Post.findOneAndUpdate({ _id: postId }, {
+               $push: {
+                  likes: new mongoose.Types.ObjectId(userId)
+               }
+            }, {
+               new: true
+            })
+         }
+        
          const usersData = await User.find({ _id: {  $in: postObj.likes.map((item) => new mongoose.Types.ObjectId(item)) } }).select({ username: 1 });
          console.log(usersData);
          return res.json({ usersData });
