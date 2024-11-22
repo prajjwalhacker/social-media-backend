@@ -6,6 +6,7 @@ const config = require('../config.json');
 const Post = require('../models/Post');
 const mongoose = require('mongoose');
 const ProfileAnalytics = require('../models/ProfileAnalytics');
+const moment = require('moment');
 
 
 dotenv.config();
@@ -130,6 +131,40 @@ const followUser = async (req, res) => {
      catch (err) {
         res.status(500).json({ message: "Something went wrong" });
      }
+}
+
+const analyticsStream = async (req, res) => {
+   try {
+      const { userId, visitedUserId } = req.body;
+      const startDate = moment().startOf('date').toDate();
+
+      const profileAnalytics = await ProfileAnalytics.findOne({ creationDate: {
+         $gt: startDate
+      } }).lean();
+      
+      if (!profileAnalytics) {
+         await ProfileAnalytics.create({ _id: new mongoose.Types.ObjectId(), userId: new mongoose.Types.ObjectId(userId), totalVisits: 1, peopleVisted: [
+            {
+               peopleId: new mongoose.Types.ObjectId(visitedUserId),
+               visitedAt: new Date()
+            }
+         ] })
+      }
+      else {
+         await ProfileAnalytics.findOneAndUpdate({ userId: new mongoose.Types.ObjectId(userId) }, {
+            $push: {
+               peopleVisited: {
+                  peopleId: new mongoose.Types.ObjectId(visitedUserId),
+                  visitedAt: new Date()
+               }
+            }
+         })
+      }
+      res.json({ message: "analytics record saved successfully" });
+   }
+   catch (err) {
+      res.status(500).json({ message: "something went wrong" });
+   }
 }
 
 // Login Function
@@ -513,4 +548,4 @@ const userNameSearch = async (req,res) => {
     
 }
 
-module.exports = { logout, getFollowers, commentAddition, followUser, login,  signup, genenrateToken, likesCreation, userUpdate, postCreation, getPosts, updatePost, authenticate, postDeletion, connectionRequestSend, acceptConnection, getProfileData, profileAnalytics, getAnotherProfileData, userNameSearch };
+module.exports = { logout, getFollowers, analyticsStream,  commentAddition, followUser, login,  signup, genenrateToken, likesCreation, userUpdate, postCreation, getPosts, updatePost, authenticate, postDeletion, connectionRequestSend, acceptConnection, getProfileData, profileAnalytics, getAnotherProfileData, userNameSearch };
