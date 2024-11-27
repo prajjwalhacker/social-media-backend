@@ -25,7 +25,7 @@ dotenv.config();
 
 
 const corsOptions = {
-   origin: 'https://social-media-backend-ke0d.onrender.com',
+   origin: 'https://social-media-frontend-pied.vercel.app/',
    credentials: true,
    optionsSucessStatus: 200
 }
