@@ -244,7 +244,7 @@ const login = async (req, res) => {
     res
       .status(200).cookie('refreshToken', refreshToken, {
          secure: true, // Ensure 'secure' is true in production for HTTPS
-         httpOnly: false,
+         httpOnly: true,
          sameSite: "None"
       })
       .header('Authorization', token)
