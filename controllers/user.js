@@ -65,6 +65,7 @@ const uploadProfilePicture =  async (req, res) => {
        if (!req.file) {
           res.json({ message: "file is required" });
        }
+       const userObj = await User.findOne({ _id: req.id });
        const blob = bucket.file(req.file.originalname);
        const blobStream = blob.createWriteStream({
          metadata: {
@@ -83,6 +84,8 @@ const uploadProfilePicture =  async (req, res) => {
             await blob.makePublic();
             // Construct the public URL
             const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+            userObj.profileUrl = publicUrl;
+            await userObj.save();
             res.status(200).send({ message: 'File uploaded successfully', url: publicUrl });
          });
 

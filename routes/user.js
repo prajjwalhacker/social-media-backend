@@ -48,7 +48,7 @@ router.post('/streams', authenticate, analyticsStream);
 
 router.post('/updatePost', authenticate, updatePost);
 
-router.post('/uploadPicture', upload.single('image'), uploadProfilePicture);
+router.post('/uploadPicture',authenticate, upload.single('image'), uploadProfilePicture);
 
 router.post('/connectionRequest', authenticate, connectionRequestSend);
 

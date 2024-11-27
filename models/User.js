@@ -49,6 +49,7 @@ const userSchema = new mongoose.Schema({
   followers: [mongoose.Schema.Types.ObjectId],
   following: [mongoose.Schema.Types.ObjectId,
   ],
+  profileUrl: String,
   createdAt: {
     type: Date,
     default: Date.now,

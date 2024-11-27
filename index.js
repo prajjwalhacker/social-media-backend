@@ -25,7 +25,7 @@ dotenv.config();
 
 
 const corsOptions = {
-   origin: 'http://localhost:3000',
+   origin: 'https://social-media-backend-ke0d.onrender.com',
    credentials: true,
    optionsSucessStatus: 200
 }
