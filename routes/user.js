@@ -1,7 +1,14 @@
 const express = require('express');
-const { signup, login, logout, genenrateToken, analyticsStream, getFollowers, followUser,  commentAddition, postCreation, getPosts, authenticate, postDeletion, likesCreation, updatePost, connectionRequestSend, acceptConnection, getProfileData , getAnotherProfileData, userNameSearch, userUpdate } = require('../controllers/user.js');
+const { signup, login, logout, genenrateToken, analyticsStream, getFollowers, followUser,  commentAddition, postCreation, getPosts, authenticate, postDeletion, likesCreation, updatePost, connectionRequestSend, acceptConnection, getProfileData , getAnotherProfileData, userNameSearch, userUpdate, uploadProfilePicture } = require('../controllers/user.js');
 
 const router = express.Router();
+
+const multer = require('multer');
+
+const upload = multer({
+    storage: multer.memoryStorage(), // Temporarily store files in memory
+    limits: { fileSize: 5 * 1024 * 1024 }, // Limit: 5MB
+});
 
 
 // Route for user signup
@@ -40,6 +47,8 @@ router.post('/deletePost', authenticate, postDeletion);
 router.post('/streams', authenticate, analyticsStream);
 
 router.post('/updatePost', authenticate, updatePost);
+
+router.post('/uploadPicture', upload.single('image'), uploadProfilePicture);
 
 router.post('/connectionRequest', authenticate, connectionRequestSend);
 

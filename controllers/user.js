@@ -7,9 +7,15 @@ const Post = require('../models/Post');
 const mongoose = require('mongoose');
 const ProfileAnalytics = require('../models/ProfileAnalytics');
 const moment = require('moment');
-
+const { Storage } = require('@google-cloud/storage');
 
 dotenv.config();
+
+const storage = new Storage({
+   keyFilename: 'GOOGLE_API_CRED.json', 
+});
+
+const bucket = storage.bucket('vercel-static-bucket-test'); 
 
 
 const createToken = (userId, expiresIn) => {
@@ -52,6 +58,40 @@ const getFollowers = async (req, res) => {
       console.log(err);
       return res.status(500).json({ msg: "Something went wrong !" });
    }
+}
+
+const uploadProfilePicture =  async (req, res) => {
+    try {
+       if (!req.file) {
+          res.json({ message: "file is required" });
+       }
+       const blob = bucket.file(req.file.originalname);
+       const blobStream = blob.createWriteStream({
+         metadata: {
+            contentType: req.file.mimetype,
+         },
+         resumable: false,
+        });
+
+        blobStream.on('error', (error) => {
+          console.error(error);
+          res.status(500).send({ error: 'File upload failed.' });
+        });
+
+         blobStream.on('finish', async () => {
+            // Make the file publicly accessible
+            await blob.makePublic();
+            // Construct the public URL
+            const publicUrl = `https://storage.googleapis.com/${bucket.name}/${blob.name}`;
+            res.status(200).send({ message: 'File uploaded successfully', url: publicUrl });
+         });
+
+         blobStream.end(req.file.buffer);
+    }
+    catch (err) {
+       cosole.log("Erroro");
+       console.log(err);
+    }
 }
 
 
@@ -548,4 +588,4 @@ const userNameSearch = async (req,res) => {
     
 }
 
-module.exports = { logout, getFollowers, analyticsStream,  commentAddition, followUser, login,  signup, genenrateToken, likesCreation, userUpdate, postCreation, getPosts, updatePost, authenticate, postDeletion, connectionRequestSend, acceptConnection, getProfileData, profileAnalytics, getAnotherProfileData, userNameSearch };
+module.exports = { logout, getFollowers, analyticsStream, uploadProfilePicture, commentAddition, followUser, login,  signup, genenrateToken, likesCreation, userUpdate, postCreation, getPosts, updatePost, authenticate, postDeletion, connectionRequestSend, acceptConnection, getProfileData, profileAnalytics, getAnotherProfileData, userNameSearch };

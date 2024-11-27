@@ -25,7 +25,7 @@ dotenv.config();
 
 
 const corsOptions = {
-   origin: 'https://social-media-frontend-pied.vercel.app',
+   origin: 'http://localhost:3000',
    credentials: true,
    optionsSucessStatus: 200
 }
